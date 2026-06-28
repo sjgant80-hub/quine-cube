@@ -1,0 +1,18 @@
+# logs are generated · don't commit (regenerate via run)
+phase1/logs/
+phase2/logs_dodeca/
+phase3/logs_llm/
+logs/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# editor
+.vscode/
+.idea/
+*.swp
+.DS_Store

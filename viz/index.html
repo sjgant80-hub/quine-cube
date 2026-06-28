@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>QUINE·CUBE · depth-crossing observatory</title>
+<style>
+:root{--void:#0a0a10;--deep:#13131c;--surface:#1b1b26;--moss:#2d4a3e;--leaf:#6b9d6f;--ember:#c97a3d;--gold:#c9a84c;--linen:#ebe5d6;--text:#d4cfc8;--muted:#7a7681;--bad:#c75a4a;--border:rgba(235,229,214,0.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--void);color:var(--text);font-family:-apple-system,system-ui,sans-serif;font-size:14px;line-height:1.6}
+a{color:var(--ember);text-decoration:none}
+.top{padding:18px 28px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.brand{font-family:Georgia,serif;font-size:22px;color:var(--linen)}
+.brand .glyph{color:var(--ember);margin-right:6px}
+.sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
+main{padding:28px;max-width:1280px;margin:0 auto}
+h2{font-family:Georgia,serif;font-size:24px;color:var(--linen);font-weight:400;margin:24px 0 12px}
+.dropzone{border:2px dashed var(--ember);border-radius:8px;padding:34px;text-align:center;background:var(--deep);cursor:pointer;margin-bottom:24px}
+.dropzone.hover{background:rgba(201,122,61,0.08)}
+.dropzone .glyph{font-size:42px;color:var(--ember);margin-bottom:8px;display:block}
+.dropzone code{background:var(--surface);padding:2px 8px;border-radius:3px;color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:12px}
+.summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.stat{background:var(--deep);border:1px solid var(--border);border-radius:6px;padding:18px 22px}
+.stat .v{font-family:Georgia,serif;font-size:32px;color:var(--linen);line-height:1}
+.stat .v.ember{color:var(--ember)}.stat .v.leaf{color:var(--leaf)}.stat .v.gold{color:var(--gold)}.stat .v.bad{color:var(--bad)}
+.stat .l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.runs{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:14px}
+.run{background:var(--deep);border:1px solid var(--border);border-radius:6px;padding:18px 22px}
+.run.has-trans{border-color:var(--ember)}
+.run h3{font-family:Georgia,serif;font-size:18px;color:var(--linen);font-weight:400;margin-bottom:4px}
+.run .meta{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.run pre{background:var(--surface);padding:10px 12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);overflow-x:auto;white-space:pre-wrap;max-height:200px}
+.chart{height:120px;display:flex;align-items:flex-end;gap:4px;background:var(--surface);padding:10px;border-radius:4px;margin-top:10px}
+.bar{flex:1;background:linear-gradient(to top,var(--moss),var(--leaf));min-height:2px;border-radius:2px 2px 0 0;position:relative;cursor:help}
+.bar.transition{background:linear-gradient(to top,var(--ember),var(--gold));box-shadow:0 0 8px var(--ember)}
+.bar:hover::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--void);color:var(--linen);padding:4px 8px;border-radius:3px;white-space:nowrap;font-size:10px;font-family:'JetBrains Mono',monospace;z-index:10}
+.metric-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.trans{margin-top:12px;padding:10px 12px;background:rgba(201,122,61,0.08);border-left:3px solid var(--ember);border-radius:0 4px 4px 0;font-size:12px;color:var(--linen)}
+.trans-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ember);margin-bottom:4px}
+footer{padding:22px 28px;text-align:center;border-top:1px solid var(--border);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em}
+footer .seal{color:var(--ember)}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand"><span class="glyph">◊</span>QUINE·CUBE</div>
+  <div class="sub">depth-crossing observatory · v0.1</div>
+</div>
+
+<main>
+
+<div class="dropzone" id="drop">
+  <span class="glyph">⬆</span>
+  <div style="color:var(--linen);font-size:15px;margin-bottom:4px">Drop <code>logs/summary.json</code> here</div>
+  <div style="color:var(--muted);font-size:12px">or click to pick · runs from phase1/logs/ or phase2/logs_dodeca/ or phase3/logs_llm/</div>
+  <input type="file" id="filein" accept=".json" style="display:none">
+</div>
+
+<div id="output"></div>
+
+</main>
+
+<footer>
+  <div>QUINE·CUBE · the recursion IS the experiment · the observation IS the instrument</div>
+  <div class="seal" style="margin-top:6px">◊ · κ = 1 · phi is home</div>
+</footer>
+
+<script>
+const drop = document.getElementById('drop');
+const filein = document.getElementById('filein');
+const output = document.getElementById('output');
+
+drop.onclick = () => filein.click();
+drop.ondragover = e => { e.preventDefault(); drop.classList.add('hover'); };
+drop.ondragleave = () => drop.classList.remove('hover');
+drop.ondrop = e => {
+  e.preventDefault();
+  drop.classList.remove('hover');
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+};
+filein.onchange = e => { if (e.target.files[0]) loadFile(e.target.files[0]); };
+
+function loadFile(file) {
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      render(data);
+    } catch (err) {
+      output.innerHTML = `<div style="color:var(--bad);padding:14px">Parse error: ${err.message}</div>`;
+    }
+  };
+  r.readAsText(file);
+}
+
+function render(data) {
+  const runs = data.runs || (Array.isArray(data) ? data : [data]);
+  const totalRuns = runs.length;
+  const totalCrossings = runs.reduce((a, r) => a + (r.depth_count || (r.log || []).length), 0);
+  const totalTransitions = runs.reduce((a, r) => {
+    if (!r.phase_transitions) return a;
+    return a + Object.values(r.phase_transitions).reduce((b, t) => b + (t || []).length, 0);
+  }, 0);
+  const shapes = [...new Set(runs.map(r => r.shape || 'cube'))].join(' · ');
+  const models = [...new Set(runs.map(r => r.model).filter(Boolean))].join(' · ');
+
+  output.innerHTML = `
+    <div class="summary-row">
+      <div class="stat"><div class="v">${totalRuns}</div><div class="l">runs</div></div>
+      <div class="stat"><div class="v leaf">${totalCrossings}</div><div class="l">depth crossings</div></div>
+      <div class="stat"><div class="v ${totalTransitions > 0 ? 'ember' : 'muted'}">${totalTransitions}</div><div class="l">phase-transition candidates</div></div>
+      <div class="stat"><div class="v gold">${shapes || 'cube'}</div><div class="l">shape</div></div>
+      ${models ? `<div class="stat"><div class="v">${models}</div><div class="l">model</div></div>` : ''}
+    </div>
+
+    <h2>Runs</h2>
+    <div class="runs">
+      ${runs.map(renderRun).join('')}
+    </div>
+  `;
+}
+
+function renderRun(r) {
+  const transCount = r.phase_transitions
+    ? Object.values(r.phase_transitions).reduce((a, t) => a + (t || []).length, 0)
+    : 0;
+  const log = r.log || [];
+
+  // pick the primary metric to chart - prefer resolution_confidence
+  const metrics = ['resolution_confidence', 'novelty', 'coherence', 'latency_ms', 'answer_length'];
+  const charts = metrics.filter(m => log.some(e => e[m] !== undefined)).slice(0, 3);
+
+  return `
+    <div class="run ${transCount > 0 ? 'has-trans' : ''}">
+      <h3>${(r.shape || 'cube').toUpperCase()} · depth ${r.max_depth}</h3>
+      <div class="meta">${(r.input || '').slice(0, 60)} · ${r.elapsed_s}s · ${r.depth_count || log.length} crossings</div>
+
+      ${charts.map(metric => {
+        const values = log.map(e => typeof e[metric] === 'number' ? e[metric] : 0);
+        const max = Math.max(...values, 0.001);
+        const trans = (r.phase_transitions || {})[metric] || [];
+        const transDepths = new Set(trans.map(t => t.depth));
+        return `
+          <div class="chart">
+            ${values.map((v, i) => {
+              const isT = transDepths.has(log[i].depth);
+              const pct = (v / max) * 100;
+              return `<div class="bar ${isT ? 'transition' : ''}" style="height:${Math.max(2, pct)}%" data-tip="d${log[i].depth} · ${metric}=${v.toFixed(3)}"></div>`;
+            }).join('')}
+          </div>
+          <div class="metric-label">${metric}</div>
+        `;
+      }).join('')}
+
+      ${transCount > 0 ? `
+        <div class="trans">
+          <div class="trans-label">▸ ${transCount} phase transitions</div>
+          ${Object.entries(r.phase_transitions).flatMap(([m, ts]) =>
+            (ts || []).map(t => `<div>${m}: depth ${t.depth} · z=${t.z?.toFixed(2) || '?'} · ${t.from?.toFixed(3)} → ${t.to?.toFixed(3)}</div>`)
+          ).join('')}
+        </div>
+      ` : ''}
+
+      ${r.final_answer ? `<pre style="margin-top:10px">${escapeHTML(String(r.final_answer).slice(0, 400))}</pre>` : ''}
+      ${r.final_answer_preview ? `<pre style="margin-top:10px">${escapeHTML(r.final_answer_preview)}</pre>` : ''}
+    </div>
+  `;
+}
+
+function escapeHTML(s) {
+  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+</script>
+
+</body>
+</html>
